@@ -1,0 +1,121 @@
+# Simple PowerShell Menu Script with Tools
+
+# Function to Display Menu
+function Show-Menu {
+    param (
+        [string]$Title = "My PowerShell Tool Menu",
+        [string]$Header = "--------------------------------------------------------",
+        [string]$Footer = "--------------------------------------------------------",
+        [array]$Options
+    )
+
+    cls
+    Write-Host $Title
+    Write-Host $Header
+    foreach ($i in [enumerate] $Options) {
+        Write-Host "[$($i.Index + 1)] $($i.Value.Name) - $($i.Value.Description)"
+    }
+    Write-Host $Footer
+    Write-Host "Enter the number of your chosen option:"
+}
+
+# Define Menu Options with Associated Actions
+$menuOptions = @(
+    [PSCustomObject]@{ Name = "IP"; Description = "View and Configure IP Settings"; Action = { & Show-IPTools } },
+    [PSCustomObject]@{ Name = "Network"; Description = "Inspect Network Connections and Status"; Action = { & Show-NetworkTools } },
+    [PSCustomObject]@{ Name = "Local"; Description = "View Local System Information"; Action = { & Show-LocalInfo } }
+)
+
+# Function for IP Tools
+function Show-IPTools {
+    cls
+    Write-Host "IP Tools"
+    Write-Host "--------"
+    Write-Host "1. View Current IP Config"
+    Write-Host "2. Renew DHCP Lease"
+    Write-Host "3. Back to Main Menu"
+    
+    $ipChoice = Read-Host "Enter your choice"
+    switch ($ipChoice) {
+        1 { Get-NetIPConfiguration | Select-Object InterfaceDescription, InterfaceAlias, GatewayDefaultInterfaceMetric, IPv4DefaultGateway, IPv6DefaultGateway }
+        2 { 
+            ipconfig /release
+            Start-Sleep -Seconds 2
+            ipconfig /renew
+            Write-Host "DHCP Lease Renewed. New Config:"
+            Get-NetIPConfiguration | Select-Object InterfaceDescription, InterfaceAlias, IPv4DefaultGateway, IPv6DefaultGateway
+            Read-Host "Press Enter to continue..."
+        }
+        3 { return }
+        Default { Write-Host "Invalid choice. Returning to main menu..."; Start-Sleep -Seconds 1; return }
+    }
+    Show-IPTools # Loop until back to main menu
+}
+
+# Function for Network Tools
+function Show-NetworkTools {
+    cls
+    Write-Host "Network Tools"
+    Write-Host "------------"
+    Write-Host "1. List All Network Connections"
+    Write-Host "2. Check Internet Connectivity"
+    Write-Host "3. Back to Main Menu"
+    
+    $networkChoice = Read-Host "Enter your choice"
+    switch ($networkChoice) {
+        1 { Get-NetConnectionProfile }
+        2 { 
+            if (Test-Connection -ComputerName google.com -Count 1 -Quiet) {
+                Write-Host "Internet Connectivity: OK"
+            } else {
+                Write-Host "No Internet Connectivity"
+            }
+            Read-Host "Press Enter to continue..."
+        }
+        3 { return }
+        Default { Write-Host "Invalid choice. Returning to main menu..."; Start-Sleep -Seconds 1; return }
+    }
+    Show-NetworkTools # Loop until back to main menu
+}
+
+# Function for Local System Information
+function Show-LocalInfo {
+    cls
+    Write-Host "Local System Information"
+    Write-Host "------------------------"
+    Write-Host "1. System Overview"
+    Write-Host "2. Processor and RAM Info"
+    Write-Host "3. Back to Main Menu"
+    
+    $localChoice = Read-Host "Enter your choice"
+    switch ($localChoice) {
+        1 { 
+            Get-WmiObject -Class Win32_OperatingSystem | Select-Object Caption, ServicePackMajorVersion, BuildNumber, SystemDrive, SystemDirectory
+            Get-WmiObject -Class Win32_ComputerSystem | Select-Object Name, Manufacturer, Model, NumberOfProcessors
+            Read-Host "Press Enter to continue..."
+        }
+        2 { 
+            Get-WmiObject -Class Win32_Processor | Select-Object Name, NumberOfCores, MaxClockSpeed
+            Get-WmiObject -Class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | Select-Object @{Name="TotalRAM(GB)";Expression={($_.Sum / 1GB) -as [int]}}
+            Read-Host "Press Enter to continue..."
+        }
+        3 { return }
+        Default { Write-Host "Invalid choice. Returning to main menu..."; Start-Sleep -Seconds 1; return }
+    }
+    Show-LocalInfo # Loop until back to main menu
+}
+
+# Main Loop
+while ($true) {
+    Show-Menu -Options $menuOptions
+    $choice = Read-Host
+    if ($choice -match "^[1-3]$") {
+        ($menuOptions[$choice - 1]).Action.Invoke()
+    } elseif ($choice -eq "4") { # Not listed but added for exit
+        Write-Host "Exiting..."
+        break
+    } else {
+        Write-Host "Invalid choice. Please enter a number between 1 and 3."
+        Start-Sleep -Seconds 1
+    }
+}
